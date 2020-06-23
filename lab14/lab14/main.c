@@ -58,35 +58,6 @@ int arguments(char* input_file, char* output_dir, int *max_iter, int *dump_freq,
 	return 0;
 }
 
-int* read_file() {
-	fread(&header, 1, sizeof(header), file);
-
-	int height = header.height;
-	int width = header.width;
-
-	int *a = malloc(height * width * sizeof(int));
-
-	unsigned short int t = 0;
-	for (int i = height - 1; i >= 0; i--) {
-		for (int j = 0; j < width; ++j) {
-			fread(&t, 1, 1, file);
-			fread(&t, 1, 1, file);
-			fread(&t, 1, 1, file);
-			if (t == 255) {
-				a[i * width + j] = 255;
-			}
-			else {
-				a[i * width + j] = 0;
-			}
-		}
-	}
-	return a;
-}
-
-/*int write_file(char* output_dir, int count, int *b) {
-	return 0;
-}*/
-
 int main(int argc, char* argv[]) {
 	// work with arguments
 	if ((argc < 5) || (argc > 9)) {
@@ -102,8 +73,6 @@ int main(int argc, char* argv[]) {
 	if (arguments(input_file, output_dir, &max_iter, &dump_freq, argc, argv) == 1)
 		return 1;
 
-	printf("%d %d ", max_iter, dump_freq);
-
 	file = fopen(input_file, "rb");
 	if (file == NULL) {
 		printf("File %s can't open!", input_file);
@@ -113,7 +82,6 @@ int main(int argc, char* argv[]) {
 	fseek(file, 0, SEEK_SET);
 
 	// read file
-
 	fread(&header.type, 2, 1, file);
 	fread(&header.size_file, 4, 1, file);
 	fread(&header.res1, 2, 1, file);
@@ -130,8 +98,6 @@ int main(int argc, char* argv[]) {
 	fread(&header.ypels_per_meter, 4, 1, file);
 	fread(&header.colors_used, 4, 1, file);
 	fread(&header.color_important, 4, 1, file);
-
-	printf("\n%u %u %u %u %u %u %d %d %u %u %u %u %d %d %u %u\n", header.type, header.size_file, header.res1, header.res2, header.offset, header.size, header.width, header.height, header.planes, header.byte_count, header.compression, header.size_image, header.xpels_per_meter, header.ypels_per_meter, header.colors_used, header.color_important);
 
 	int height = header.height;
 	int width = header.width;
@@ -152,27 +118,13 @@ int main(int argc, char* argv[]) {
 			fread(&t, 1, 1, file);
 			fread(&t, 1, 1, file);
 			fread(&t, 1, 1, file);
+
 			if (j == width - 1) {
 				char skip;
 				fread(&skip, 1, 1, file);
 			}
-			// printf("%d ", t);
+
 			a[i * width + j] = (t == 255) ? 255 : 0;
-			/* a[i * width + j] = t / 128;
-			t %= 128;
-			a[i * width + j + 1] = t / 64;
-			t %= 64;
-			a[i * width + j + 2] = t / 32;
-			t %= 32;
-			a[i * width + j + 3] = t / 16;
-			t %= 16;
-			a[i * width + j + 4] = t / 8;
-			t %= 8;
-			a[i * width + j + 5] = t / 4;
-			t %= 4;
-			a[i * width + j + 6] = t / 2;
-			t %= 2;
-			a[i * width + j + 7] = t; */
 		}
 	}
 
@@ -235,17 +187,13 @@ int main(int argc, char* argv[]) {
 		if ((count % dump_freq) == 0) {
 			char out_name[200] = "";
 			strcpy(out_name, output_dir);
-			//char* out_name = malloc(sizeof(output_dir) + sizeof("\\"));
 			strcat(out_name, "\\");
-			//char* out_name = malloc(sizeof(output_dir) + sizeof("\\") + sizeof(output_name));
 			strcat(out_name, output_name);
 			strcat(out_name, "_");
 			char number[10];
 			char* s = itoa(count, number, 10);
 			strcat(out_name, number);
 			strcat(out_name, ".bmp");
-
-			printf("%s", out_name);
 
 			FILE* file_out = fopen(out_name, "wb");
 
